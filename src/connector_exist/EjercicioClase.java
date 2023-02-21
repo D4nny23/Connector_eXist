@@ -48,9 +48,12 @@ public class EjercicioClase {
             System.out.println("Elige una opción: ");
             System.out.println("1.Mostrar el nombre y dirección de socios" + "\n"
                     + "2.Mostrar los códigos y nombre de socios asociados segun su direccón." + "\n"
-                    + "3.Mostrar el nombre de los socios ordenados por antigüedad"+"\n"
-                    + "4.Mostrar las actividades de las que dispone el gimnasio"+"\n"
-                    + "5.");
+                    + "3.Mostrar el nombre de los socios ordenados por antigüedad" + "\n"
+                    + "4.Mostrar las actividades de las que dispone el gimnasio" + "\n"
+                    + "5.Mostrar el nombre de las actividades a las que está apuntado un socio" + "\n"
+                    + "6.Mostrar un listado de los usuarios con las actividades a las que ha ido" + "\n"
+                    + "7.Ejecuta una consulta" + "\n"
+                    + "8.Salir");
             op = Integer.parseInt(sc.nextLine());
             XQPreparedExpression xqpe = null;//Como el resulSet
             switch (op) {
@@ -69,17 +72,17 @@ public class EjercicioClase {
 
                 case 2:
                     System.out.print("Dime la dirección: ");
-                    String direccion= sc.nextLine();
+                    String direccion = sc.nextLine();
                     try {
-                    xqpe = conn.prepareExpression("for $x in /SOCIOS_GIM/fila_socios where $x/DIRECCION ='"+direccion+"'return <socio><id>{$x/COD/text()}</id><direccion>{$x/DIRECCION/text()}</direccion><nombre>{$x/NOMBRE/text()}</nombre></socio>");
-                    XQResultSequence rs = null;
-                    rs = xqpe.executeQuery();//guardamos los resultados
-                    while (rs.next()) {
-                        System.out.println(rs.getItemAsString(null));
+                        xqpe = conn.prepareExpression("for $x in /SOCIOS_GIM/fila_socios where $x/DIRECCION ='" + direccion + "'return <socio><id>{$x/COD/text()}</id><direccion>{$x/DIRECCION/text()}</direccion><nombre>{$x/NOMBRE/text()}</nombre></socio>");
+                        XQResultSequence rs = null;
+                        rs = xqpe.executeQuery();//guardamos los resultados
+                        while (rs.next()) {
+                            System.out.println(rs.getItemAsString(null));
+                        }
+                    } catch (Exception e) {
                     }
-                } catch (Exception e) {
-                }
-                break;
+                    break;
 
                 case 3:
                     try {
@@ -92,7 +95,7 @@ public class EjercicioClase {
                 } catch (Exception e) {
                 }
 
-                    break;
+                break;
 
                 case 4:
                     try {
@@ -105,51 +108,53 @@ public class EjercicioClase {
                 } catch (Exception e) {
                 }
 
-                    break;
+                break;
                 case 5:
+                    System.out.print("Introduzca el nombre del usuario: ");
+                    String nombre = sc.nextLine();
+                    try {
+                        xqpe = conn.prepareExpression("<Resultado>{for $x in /SOCIOS_GIM/fila_socios, $i in /ACTIVIDADES_GIM/fila_actividades, $z in /USO_GIMNASIO/fila_uso where $x/COD=$z/CODSOCIO and"
+                                + "$i/@cod=$z/CODACTIV and $x/NOMBRE=\"" + nombre + "\"return <socio><actividad>{$i/NOMBRE/text()}</actividad></socio>}</Resultado>");
+                        XQResultSequence rs = null;
+                        rs = xqpe.executeQuery();//guardamos los resultados
+                        while (rs.next()) {
+                            System.out.println(rs.getItemAsString(null));
+                        }
+                    } catch (Exception e) {
+                    }
 
                     break;
                 case 6:
-
-                    break;
+                    try {
+                    String query = "<Resultado>{for $x in /SOCIOS_GIM/fila_socios, $i in /ACTIVIDADES_GIM/fila_actividades, $z in/USO_GIMNASIO/fila_uso where $x/COD=$z/CODSOCIO and $i/@cod=$z/CODACTIV return <socio><nombreSocio>{$x/NOMBRE/text()}</nombreSocio><fecha>{$z/FECHA/text()}</fecha><horaInicio>\n"
+                            + "{$z/HORAINICIO/text()}</horaInicio><horaFinal>{$z/HORAFINAL/text()}</horaFinal><actividad>{$i/NOMBRE/text()}</actividad></socio>}</Resultado>";
+                    xqpe = conn.prepareExpression(query);
+                    XQResultSequence rs = null;
+                    rs = xqpe.executeQuery();//guardamos los resultados
+                    while (rs.next()) {
+                        System.out.println(rs.getItemAsString(null));
+                    }
+                } catch (Exception e) {
+                }
+                break;
                 case 7:
-
-                    break;
+                    try {
+                    System.out.print("Escriba la consulta a contunuación: ");
+                    String consulta = sc.nextLine();
+                    xqpe = conn.prepareExpression(consulta);
+                    XQResultSequence rs = null;
+                    rs = xqpe.executeQuery();//guardamos los resultados
+                    while (rs.next()) {
+                        System.out.println(rs.getItemAsString(null));
+                    }
+                } catch (Exception e) {
+                }
+                break;
                 case 8:
-                    break;
-
-                case 9:
-                    break;
-
-                case 10:
-                    break;
-
-                case 11:
-                    break;
-                case 12:
                     System.out.println("Saliendo....");
                     decision = true;
                     break;
             }
-        }
-        XQPreparedExpression xqpe = null;//Como el resulSet
-        try {
-            xqpe = conn.prepareExpression("for $x in/EMPLEADOS/EMP_ROW return $x");
-        } catch (XQException ex) {
-        }
-
-        XQResultSequence rs = null;
-
-        try {
-            rs = xqpe.executeQuery();//guardamos los resultados
-        } catch (XQException ex) {
-        }
-
-        try {
-            while (rs.next()) {
-                System.out.println(rs.getItemAsString(null));
-            }
-        } catch (Exception e) {
         }
     }
 
